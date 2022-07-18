@@ -1,22 +1,21 @@
 import disnake
+from disnake.ext import commands
 from tokens import tokens
 
 BOT_TOKEN = tokens['bot_token']
-ints = disnake.Intents.default()
-ints.message_content = True
-client = disnake.Client(intents=ints)
+my_guild = 793945580048875591
 
-@client.event
+bot = commands.Bot(
+    
+    test_guilds=[793945580048875591]
+)
+
+
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print("The bot is ready!")
 
-@client.event
-async def on_message(message):
-    print(message.content)
-    if message.author == client.user:
-        return
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+bot.load_extension("cogs.ping")  # Note: We did not append the .py extension.
 
-client.run(BOT_TOKEN)
+#bot.run(BOT_TOKEN)
