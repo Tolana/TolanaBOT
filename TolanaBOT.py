@@ -17,5 +17,5 @@ async def on_ready():
 
 
 bot.load_extension("cogs.ping")  # Note: We did not append the .py extension.
-#git test comment aaa
+#without ssh test
 #bot.run(BOT_TOKEN)
