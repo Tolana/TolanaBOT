@@ -16,8 +16,9 @@ class AudibleCommands(commands.Cog):
     @audible.sub_command()
     async def upcomming(self, inter: disnake.ApplicationCommandInteraction):
         """Get the bot's current websocket latency."""
-        upc = upcomming_books(get_upcomming_books())
-        if upc is not None:
+        upc_books = get_upcomming_books()
+        if upc_books is not None:
+            upc = upcomming_books(get_upcomming_books())
             await inter.response.send_message(embed=upc)
         else:
             await inter.response.send_message("no upcomming books!")
