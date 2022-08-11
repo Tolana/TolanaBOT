@@ -9,8 +9,11 @@ def get_new_books():
             return books
         else:
             return None
-"SELECT series.title as 'series',book.title, book.`series-url`, book.releaseDate FROM book,series WHERE book.`series-url` = series.`series-url` AND '220811' < book.releaseDate"
 
+def delete_new_books():
+    with DBManager('example.db') as cur:
+        cur.execute('DELETE FROM bookQ;')
+    return
 def get_upcomming_books():
     with DBManager('example.db') as cur:
         cur.execute("SELECT series.title as 'series',book.title, book.`series-url`, book.releaseDate FROM book,series WHERE book.`series-url` = series.`series-url` AND '220811' < book.releaseDate")

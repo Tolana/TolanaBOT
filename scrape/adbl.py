@@ -215,4 +215,11 @@ def run():
     end_time = datetime.now() - start_time
     print(f'Completed in: {end_time}')
     return
-#run()
+run()
+with DBManager('example.db') as cur:
+    cur.execute('SELECT * FROM bookQ') 
+    count = cur.fetchall()
+    if count > 100:
+        cur.execute('DELETE FROM bookQ;')
+    else: 
+        pass

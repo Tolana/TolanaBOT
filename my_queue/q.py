@@ -9,7 +9,7 @@ from disnake.ext import tasks
 from my_db.db import DBManager, open_conn
 from disnake.ext import commands
 from my_tasks.adbl_tasks import new_books
-from my_db.audible_db import get_new_books
+from my_db.audible_db import delete_new_books, get_new_books
 
 class MyQueue():
     
@@ -27,14 +27,4 @@ class MyQueue():
         if books is not None:
             embed_books = new_books(books)
             await self.bot.get_channel(793945580715638806).send(embed=embed_books)
-
-            
-            '''with DBManager('example.db') as cursor:
-                cursor.execute("SELECT * FROM bookQ")
-                r = cursor.fetchall()
-                print(r)
-                if len(r) > 0:
-                    await self.bot.get_channel(793945580715638806).send(content="QUEUE")
-                    #await self.bot.get_channel(793945580715638806).send(embed=new_books)
-                else: 
-                    print('no tasks to complete')'''
+            delete_new_books()
