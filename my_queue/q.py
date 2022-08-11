@@ -3,40 +3,38 @@ import sys
 #pcwd = pathlib.Path(__file__).parent.resolve()
 #sys.path.append('C:\Programming\TolanaBOT')
 import sqlite3
+from webbrowser import get
 import disnake
 from disnake.ext import tasks
 from my_db.db import DBManager, open_conn
 from disnake.ext import commands
-import my_tasks
-
-
+from my_tasks.adbl_tasks import new_books
+from my_db.audible_db import get_new_books
 
 class MyQueue():
     
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        #self.con = sqlite3.connect('example.db')
-        #dbcon, dbcur = open_conn('example.db')
-        #self.con = dbcon
-        #self.cur = dbcur
-        self.queue = self.check_q.start()
-        print("Queue initialized!")
+
+    def start(self):
+        self.check_q.start()
+        print("Queue task running...")
 
     @tasks.loop(minutes=15)
     async def check_q(self):
-            print('checking Q for tasks: ...')
-            with DBManager('example.db') as cursor:
+        print('checking Q for tasks: ...')
+        books = get_new_books() 
+        if books is not None:
+            embed_books = new_books(books)
+            await self.bot.get_channel(793945580715638806).send(embed=embed_books)
+
+            
+            '''with DBManager('example.db') as cursor:
                 cursor.execute("SELECT * FROM bookQ")
                 r = cursor.fetchall()
                 print(r)
                 if len(r) > 0:
                     await self.bot.get_channel(793945580715638806).send(content="QUEUE")
+                    #await self.bot.get_channel(793945580715638806).send(embed=new_books)
                 else: 
-                    print('no tasks to complete')
-            #self.cur.execute("SELECT * FROM queue")
-            #r = self.cur.fetchall()
-            #print(r)
-            #if len(r) > 0:
-            #    await self.bot.get_channel(793945580715638806).send(content="QUEUE")
-            #else: 
-            #    print('no tasks to complete')
+                    print('no tasks to complete')'''

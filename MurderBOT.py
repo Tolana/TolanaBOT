@@ -19,8 +19,9 @@ bot = commands.InteractionBot(
 async def on_ready():
     print("The bot is ready!")
     q = MyQueue(bot)
+    q.start()
 
-
-
+bot.load_extension("cogs.audible")
+#bot.load_extension("cogs.ping")
 
 bot.run(BOT_TOKEN)
