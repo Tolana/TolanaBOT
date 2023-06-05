@@ -1,8 +1,8 @@
 import sqlite3 
-
+import mysql.connector
 
 def open_conn(dbname):
-    con = sqlite3.connect(dbname)
+    con = mysql.connector.connect(host="localhost",user="admin",password="")
     cur = con.cursor()
     return con, cur
 
@@ -12,7 +12,7 @@ class DBManager(object):
         self.dbname = dbname
 
     def __enter__(self):
-        self.db = sqlite3.connect(self.dbname)
+        self.db = mysql.connector.connect(host="localhost",user="root",password="",database="audiblebooks")
         return self.db.cursor()
 
     def __exit__(self, type, value, traceback):

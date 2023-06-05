@@ -9,21 +9,31 @@ from bs4 import BeautifulSoup
 from my_db.db import DBManager
 from time import sleep
 import sqlite3
-
+import mysql.connector
 _DELAY = 10
+headers = {
+    'User-Agent': "TolanaBOT for new book notifications, contact: tolanatolana@gmail.com"
+}
+
+"""def file_get_contents(filename):
+    with open(filename,'rb') as f:
+        return f.read()"""
 
 
 def scrape(url,page=None):
     url = url + "?pageSize=50"
+    #return file_get_contents('cradle')
     if page is not None:
         url = url + f'&page={page}'
-        r = requests.get(url)
+        r = requests.get(url,headers=headers)
         return r.content
-    r = requests.get(url)
+    r = requests.get(url,headers=headers)
+    print("scraped..")
     return r.content
 
 # PARSER FUNCTIONS 
 def saveBooks(soup,books=None):
+    print('save books')
     if books is None:
         saved_books = []
     else:
@@ -56,6 +66,7 @@ def saveBooks(soup,books=None):
         reverse_date = datetime.strptime(release_date,'%m-%d-%y')
         saved_book['release_date'] = datetime.strftime(reverse_date,'%y%m%d')
         saved_books.append(saved_book)
+    print("end of save book")
     return saved_books
 
 def getSeriesTitle(soup):
@@ -69,18 +80,20 @@ def getSeriesPages(soup):
 # PARSER FUNCTIONS END
 
 
-# DB FUNCTIONS 
+# DB FUNCTIONS :)
 
 def checkForNewBook(url,count):
     with DBManager('example.db') as cur:
-        cur.execute(f'SELECT books FROM seriesCount WHERE "series-url" = "{url}"')
-        book_count = cur.fetchone()
+        cur.execute(f'SELECT `books` FROM `seriesCount` WHERE `series_url` = "{url}"')
+        #print(f'SELECT `books` FROM `seriesCount` WHERE `series_url` = "{url}"')
+        book_count = cur.fetchone()[0]
+        print("BOOK_COUNT: ",book_count)
         if book_count is None:
             print('was none!')
             cur.execute(f'REPLACE INTO seriesCount VALUES("{url}","{count}")')
             return 0
         else: 
-            cur.execute(f'SELECT books FROM seriesCount WHERE "series-url" = "{url}"')
+            cur.execute(f'SELECT `books` FROM seriesCount WHERE `series_url` = "{url}"')
             old_count = cur.fetchone()[0]
             print(old_count)
             cur.execute(f'REPLACE INTO seriesCount VALUES("{url}","{count}")')
@@ -99,10 +112,11 @@ def insertSeries(url,title,authors):
         insertAuthor(author[0],author[1])
     with DBManager('example.db') as cur:
         try:
-            cur.execute(f'INSERT INTO series ("title","series-url") VALUES("{title}","{url}");')
+            #print('InsertSeries: '+ f'INSERT INTO series ("title","series_url") VALUES("{title}","{url}");')
+            cur.execute(f'INSERT INTO `series` (`title`,`series_url`) VALUES("{title}","{url}");')
             rowid = cur.lastrowid
         except sqlite3.IntegrityError:
-            '''cur.execute(f'SELECT id FROM series WHERE "series.series-url" = "{url}"')
+            '''cur.execute(f'SELECT id FROM `series` WHERE `series.series_url` = "{url}"')
             for row in cur:
                 rowid = row[0]'''
             return
@@ -113,24 +127,24 @@ def insertSeries(url,title,authors):
 def insertSeriesAuthor(url,id):
     with DBManager('example.db') as cur:
         try:
-            cur.execute(f'INSERT INTO seriesAuthors VALUES("{url}","{id}")')
-        except sqlite3.IntegrityError:
+            cur.execute(f'INSERT INTO `seriesAuthors` VALUES("{url}","{id}")')
+        except mysql.connector.IntegrityError:
             pass
     return
 
 def insertAuthor(name,url):
     with DBManager('example.db') as cur:
         try:
-            cur.execute(f'INSERT INTO author VALUES("{name}","{url}")')
-        except sqlite3.IntegrityError:
+            cur.execute(f'INSERT INTO `author` VALUES("{name}","{url}")')
+        except mysql.connector.IntegrityError:
             pass
     return
 
 def insertNarrator(name,url):
     with DBManager('example.db') as cur:
         try:
-            cur.execute(f'INSERT INTO narrator VALUES("{name}","{url}")')
-        except sqlite3.IntegrityError:
+            cur.execute(f'INSERT INTO `narrator` VALUES("{name}","{url}")')
+        except mysql.connector.IntegrityError:
             pass
     return
 
@@ -141,10 +155,10 @@ def insertBook(book,url):
     releaseDate = book['release_date']
     with DBManager('example.db') as cur:
         try:
-            cur.execute(f'INSERT INTO book ("title","series-url","length","releaseDate") VALUES("{title}","{url}","{length}","{releaseDate}")')
+            cur.execute(f'INSERT INTO book (`title`,`series_url`,`length`,`releaseDate`) VALUES("{title}","{url}","{length}","{releaseDate}")')
             rowid = cur.lastrowid
             cur.execute(f'INSERT INTO bookQ VALUES({rowid});')
-        except sqlite3.IntegrityError:
+        except mysql.connector.IntegrityError:
             return
     return rowid
 
@@ -153,8 +167,8 @@ def insertBookAuthors(authors,id):
         url = author[1]
         with DBManager('example.db') as cur:
             try:
-                cur.execute(f'INSERT INTO authors VALUES("{url}","{id}")')
-            except sqlite3.IntegrityError:
+                cur.execute(f'INSERT INTO `authors` VALUES("{url}","{id}")')
+            except mysql.connector.IntegrityError:
                 pass
     return
 
@@ -163,8 +177,8 @@ def insertBookNarrators(narrators,id):
         url = narrator[1]
         with DBManager('example.db') as cur:
             try:
-                cur.execute(f'INSERT INTO narrators VALUES("{url}","{id}")')
-            except sqlite3.IntegrityError:
+                cur.execute(f'INSERT INTO `narrators` VALUES("{url}","{id}")')
+            except mysql.connector.IntegrityError:
                 pass
     return
 
@@ -218,7 +232,7 @@ def run():
 run()
 with DBManager('example.db') as cur:
     cur.execute('SELECT * FROM bookQ') 
-    count = cur.fetchall()
+    count = len(cur.fetchall())
     if count > 100:
         cur.execute('DELETE FROM bookQ;')
     else: 
