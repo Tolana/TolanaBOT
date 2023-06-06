@@ -6,21 +6,31 @@ pcwd = pathlib.Path(__file__).parent.parent.resolve()
 sys.path.append(str(pcwd))
 import requests
 from bs4 import BeautifulSoup
-from my_db.db import DBManager
 from my_db.db import open_conn
 from time import sleep
 import sqlite3
 import mysql.connector
-_DELAY = 10
-headers = {
-    'User-Agent': "TolanaBOT for new book notifications, contact: tolanatolana@gmail.com"
-}
+import argparse
+parser = argparse.ArgumentParser(description="Audible Scraping/Insert into Mysql Database Script.")
+parser.add_argument("-i","--init", help="script doesn't add books to Queue.",action="store_true")
+args = parser.parse_args()
 
-"""def file_get_contents(filename):
-    with open(filename,'rb') as f:
-        return f.read()"""
+
+
+_DELAY = 10
+_INIT = args.init
+
 
 con, cur = open_conn()
+
+headers = {
+    'User-Agent': "TolanaBOT discord bot for new book notifications(personal use), contact: tolanatolana@gmail.com"
+}
+
+
+
+
+
 
 def scrape(url,page=None):
     url = url + "?pageSize=50"
@@ -177,7 +187,8 @@ def insertBook(book,url):
     try:
         cur.execute(f'INSERT INTO book (`title`,`series_url`,`length`,`releaseDate`) VALUES("{title}","{url}","{length}","{releaseDate}")')
         rowid = cur.lastrowid
-        cur.execute(f'INSERT INTO bookQ VALUES({rowid});')
+        if _INIT is False:
+            cur.execute(f'INSERT INTO bookQ VALUES({rowid});')
     except mysql.connector.IntegrityError:
         return
     else:
@@ -264,14 +275,6 @@ def run():
     print(f'Completed in: {end_time}')
     return
 run()
-
-
-cur.execute('SELECT * FROM bookQ') 
-count = len(cur.fetchall())
-if count > 100:
-    cur.execute('DELETE FROM bookQ;')
-else: 
-    pass
 
 con.commit()
 con.close()
