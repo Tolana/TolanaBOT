@@ -16,9 +16,9 @@ parser.add_argument("-i","--init", help="script doesn't add books to Queue.",act
 args = parser.parse_args()
 
 
-
-_DELAY = 10
 _INIT = args.init
+_DELAY = 10
+
 
 
 con, cur = open_conn()
@@ -132,7 +132,7 @@ def insertSeries(url,title,authors):
         #print('InsertSeries: '+ f'INSERT INTO series ("title","series_url") VALUES("{title}","{url}");')
         cur.execute(f'INSERT INTO `series` (`title`,`series_url`) VALUES("{title}","{url}");')
         rowid = cur.lastrowid
-    except sqlite3.IntegrityError:
+    except mysql.connector.IntegrityError:
         '''cur.execute(f'SELECT id FROM `series` WHERE `series.series_url` = "{url}"')
         for row in cur:
             rowid = row[0]'''
